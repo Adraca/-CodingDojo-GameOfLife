@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GameOfLife.Core
@@ -23,25 +24,38 @@ namespace GameOfLife.Core
 
         public void PassTurn()
         {
-            Grid.ForEach(c => {
+            var newGrid = Clone(Grid);
+            newGrid.ForEach(c => {
                 if (CheckIsAlive(c)) c.Revive();
                 else c.Kill();
             });
+            Grid = newGrid;
             Turn++;
         }
 
         private bool CheckIsAlive(Cell cell)
         {
             var liveNeighbours = FindNeighbours(cell.Position);
-            if (liveNeighbours < 2 || liveNeighbours > 3) return false;
-            if (liveNeighbours == 2 && !cell.Alive) return false;
-            return true;
+            if (liveNeighbours == 2 && cell.Alive) return true;
+            if (liveNeighbours == 3) return true;
+            return false; 
         }
 
         private int FindNeighbours(Location location)
         {
-            return Grid.Where(c => c.Position.X == location.X && (c.Position.Y == location.Y -1 || c.Position.Y == location.Y + 1) ||
-                c.Position.Y == location.Y && (c.Position.X == location.X - 1 || c.Position.X == location.X + 1)).Count(c => c.Alive);
+            return Grid.Where(c => !(c.Position.X == location.X && c.Position.Y == location.Y) &&
+                ((c.Position.X == location.X - 1 || c.Position.X == location.X + 1) && c.Position.Y == location.Y ||
+                (c.Position.Y == location.Y - 1 || c.Position.Y == location.Y + 1) && c.Position.X == location.X) ||
+                (c.Position.X == location.X - 1 && c.Position.Y == location.Y - 1) ||
+                (c.Position.X == location.X + 1 && c.Position.Y == location.Y + 1) ||
+                (c.Position.X == location.X - 1 && c.Position.Y == location.Y + 1) ||
+                (c.Position.X == location.X + 1 && c.Position.Y == location.Y - 1))
+                .Count(c => c.Alive);
+        }
+
+        private List<T> Clone<T>(List<T> listToClone) where T : ICloneable
+        {
+            return listToClone.Select(item => (T)item.Clone()).ToList();
         }
     }
 }

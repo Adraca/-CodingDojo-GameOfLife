@@ -1,6 +1,8 @@
-﻿namespace GameOfLife.Core
+﻿using System;
+
+namespace GameOfLife.Core
 {
-    public class Cell
+    public class Cell : ICloneable
     {
         public bool Alive { get; private set; }
         public Location Position { get; private set; }
@@ -18,6 +20,13 @@
         public void Kill()
         {
             Alive = false;
+        }
+
+        public object Clone()
+        {
+            var value = new Cell(Position.X, Position.Y);
+            value.Alive = Alive;
+            return value;
         }
     }
 }
